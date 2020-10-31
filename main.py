@@ -44,8 +44,9 @@ class Player(Person):
 
 class Manager(Person):
 
-    def __init__(self, name, age, nationality, debut):
+    def __init__(self, name, age, nationality, club, debut):
         super().__init__(name, age, nationality)
+        self.club = club
         self.debut = debut
 
 
@@ -103,6 +104,7 @@ def printTable():
         print(obj.currentRank, obj.name, obj.wins, obj.losses, obj.goalsFor, obj.points, sep=' ')
 
 playersList = []
+managerList = []
 
 search = "Liverpool"
 for obj in squadList:
@@ -121,13 +123,38 @@ for obj in squadList:
                 playerGoals = 0
             playerAssists = rowsSquad[i].find('td', attrs={'data-stat': 'assists'}).text
             playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
+
             playersList.append(Player(playerName, playerAge, playerNationality, playerMP, playerGoals, playerAssists,
                                       playerPositions))
+
+        sourceManager = requests.get("https://www.thesackrace.com/managers/premier-league").text
+        soupManager = BeautifulSoup(sourceManager, 'lxml')
+        divManager = soupManager.find_all('div', attrs={'class': 'container'})[4]
+        #print(divManager)
+        div2 = divManager.find('div', attrs={'class': 'breaking-news'})
+        #print(div2.prettify())
+        div3 = div2.find('div', attrs={'id': 'premier-league'})
+        #print(div3)
+        rowsManager = div3.find_all('div', attrs={'class': 'job-man'})
+        #print(rowsManager)
+
+        for j in range(len(rowsManager)):
+            club = rowsManager[j].find('h2').text
+            managerName = rowsManager[j].find('h1').text
+            paragraphs = rowsManager[j].find_all('p')
+            parAge = paragraphs[0].text.split()[1]
+            parTime = paragraphs[1].text.split(':')[1].lstrip()
+            managerList.append(Manager(managerName, parAge, "ENG", club, parTime))
+
 
 def printPlayers():
     for obj in playersList:
         print(obj.name, obj.age, obj.nationality, obj.minutesPlayed, obj.goals, obj.positions)
 
-printPlayers()
+#printPlayers()
 
-#test test test
+def printManagers():
+    for obj in managerList:
+        print(obj.name, obj.age, obj.nationality, obj.club, obj.debut)
+
+printManagers()
