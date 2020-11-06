@@ -108,7 +108,7 @@ for i in range(len(rowsStandings)):
 playersList = []
 managerList = []
 
-search = "Liverpool"
+search = "Everton"
 for obj in squadList:
     if obj.name == search:
         sourceSquad = requests.get(obj.link).text
@@ -185,12 +185,17 @@ button = Button(root, command=click)
 button.pack()
 
 root.title('Football Standings')
-root.geometry("1000x1000")
+root.geometry("1000x1000+300+300")
 
 my_tree = ttk.Treeview(root)
 my_tree['columns'] = ("Rank", "Name", "MatchesPlayed", "Wins", "Draws", "Losses", "GoalsFor", "GoalsAgainst", "Points")
 
-my_tree.column("#0",width=0)
+style = ttk.Style()
+style.configure('Treeview', rowheight=70)
+
+my_tree.winfo_geometry()
+
+my_tree.column("#0", width=100)
 my_tree.column("Rank", width=50, minwidth=25)
 my_tree.column("Name", anchor=W, width=130)
 my_tree.column("MatchesPlayed", anchor=CENTER, width=130)
@@ -212,11 +217,27 @@ my_tree.heading("GoalsFor", text="Goals For", anchor=W)
 my_tree.heading("GoalsAgainst", text="Goals Against", anchor=W)
 my_tree.heading("Points", text="Points", anchor=W)
 
+imgList = []
+for obj in squadList:
+    name = obj.name.lower().split()
+    if len(name) == 2:
+        name2 = "_".join(name)
+    else:
+        name2 = name[0]
+    path = "resources/"+str(name2)+".png"
+    img = tkinter.PhotoImage(file=path)
+    imgList.append(img)
 
+
+
+# img = tkinter.PhotoImage(file="everton.png")
+# img2 = tkinter.PhotoImage(file="liverpool.png")
+# imgList.append(img)
+# imgList.append(img2)
 # #my_tree.insert(parent='', index='end', iid=0, text= "Parent", values=("John", 1, "ggg"))
 count = 0
 for obj in squadList:
-    my_tree.insert(parent='', index='end', iid=count, text ='', values=(obj.currentRank, obj.name, obj.matchesPlayed,
+    my_tree.insert(parent='', index='end', iid=count, text='', image=imgList[count], values=(obj.currentRank, obj.name, obj.matchesPlayed,
                                                                     obj.wins, obj.draws, obj.losses, obj.goalsFor,
                                                                     obj.goalsAgainst, obj.points))
     count += 1
