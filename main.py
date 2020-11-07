@@ -178,8 +178,12 @@ entry.pack()
 
 def click():
     label = Label(root, text=entry.get())
+    currentItem = my_tree.focus()
+    print(my_tree.item(currentItem)['values'][1])
     # label.pack()
     print(label['text'])
+    # for i in my_tree.get_children():
+    #     my_tree.delete(i)
 
 button = Button(root, command=click)
 button.pack()
@@ -187,11 +191,20 @@ button.pack()
 root.title('Football Standings')
 root.geometry("1000x1000+300+300")
 
-my_tree = ttk.Treeview(root)
-my_tree['columns'] = ("Rank", "Name", "MatchesPlayed", "Wins", "Draws", "Losses", "GoalsFor", "GoalsAgainst", "Points")
-
 style = ttk.Style()
 style.configure('Treeview', rowheight=70)
+
+tree_frame = Frame(root)
+tree_frame.pack(pady=20)
+
+tree_scroll = Scrollbar(tree_frame)
+tree_scroll.pack(side = RIGHT, fill=Y)
+
+my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
+
+tree_scroll.config(command=my_tree.yview)
+
+my_tree['columns'] = ("Rank", "Name", "MatchesPlayed", "Wins", "Draws", "Losses", "GoalsFor", "GoalsAgainst", "Points")
 
 my_tree.winfo_geometry()
 
@@ -229,12 +242,6 @@ for obj in squadList:
     imgList.append(img)
 
 
-
-# img = tkinter.PhotoImage(file="everton.png")
-# img2 = tkinter.PhotoImage(file="liverpool.png")
-# imgList.append(img)
-# imgList.append(img2)
-# #my_tree.insert(parent='', index='end', iid=0, text= "Parent", values=("John", 1, "ggg"))
 count = 0
 for obj in squadList:
     my_tree.insert(parent='', index='end', iid=count, text='', image=imgList[count], values=(obj.currentRank, obj.name, obj.matchesPlayed,
