@@ -10,6 +10,9 @@ defenderPositions = ["DF", "FB", "LB", "RB", "CB"]
 midfielderPositions = ["MF", "DM", "CM", "LM", "RM", "WM"]
 attackerPositions = ["FW", "LW", "RW", "AM"]
 
+a = ""
+m = a.split("-")
+print(m[0])
 
 class Person:
 
@@ -108,28 +111,6 @@ for i in range(len(rowsStandings)):
 playersList = []
 managerList = []
 
-search = "Everton"
-for obj in squadList:
-    if obj.name == search:
-        sourceSquad = requests.get(obj.link).text
-        soupSquad = BeautifulSoup(sourceSquad, 'lxml')
-        tbodySquad = soupSquad.find('tbody')
-        rowsSquad = tbodySquad.find_all('tr')
-        for i in range(len(rowsSquad)):
-            playerName = rowsSquad[i].th.a.text
-            playerAge = int(rowsSquad[i].find('td', attrs={'data-stat': 'age'}).text.split('-')[0])
-            playerNationality = rowsSquad[i].find('td', attrs={'data-stat': 'nationality'}).a.span.text.split()[1]
-            playerSquad = search
-            playerMP = rowsSquad[i].find('td', attrs={'data-stat': 'minutes'}).text
-            playerGoals = rowsSquad[i].find('td', attrs={'data-stat': 'goals'}).text
-            if len(playerGoals) == 0:
-                playerGoals = 0
-            playerAssists = rowsSquad[i].find('td', attrs={'data-stat': 'assists'}).text
-            playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
-
-            playersList.append(Player(playerName, playerAge, playerNationality, playerSquad, playerMP, playerGoals, playerAssists,
-                                      playerPositions))
-
 
 sourceManager = requests.get("https://www.thesackrace.com/managers/premier-league").text
 soupManager = BeautifulSoup(sourceManager, 'lxml')
@@ -165,31 +146,93 @@ def printTable():
     for obj in squadList:
         print(obj.currentRank, obj.name, obj.wins, obj.losses, obj.goalsFor, obj.points, sep=' ')
 
-# printManagers()
+printManagers()
 # printPlayers()
 # printTable()
 root = Tk()
 
-test = Label(root, text="Hello", width=10, height=10)
+test = Label(root, text="Select a team and then press the button to show more info", width=50, height=10)
 test.pack()
+arrow = Label(root, text="|")
+arrow.pack()
+arrow2 = Label(root, text="|")
+arrow2.pack()
+arrow3 = Label(root, text="|")
+arrow3.pack()
+arrow4 = Label(root, text="V")
+arrow4.pack()
 
-entry = Entry(root, width=20)
-entry.pack()
+# entry = Entry(root, width=20)
+# entry.pack()
 
-def click():
-    label = Label(root, text=entry.get())
+def createWindow():
     currentItem = my_tree.focus()
-    print(my_tree.item(currentItem)['values'][1])
-    # label.pack()
-    print(label['text'])
-    # for i in my_tree.get_children():
-    #     my_tree.delete(i)
+    squadName = my_tree.item(currentItem)['values'][1]
+    newWindow = Toplevel(root)
+    newWindow.geometry("1000x1000+300+300")
+    title = Label(newWindow, text=squadName)
+    title.pack()
+    style2 = ttk.Style()
+    style2.configure('Treeview', rowheight=70)
+    tree_frame2 = Frame(newWindow)
+    tree_frame2.pack(pady=20)
+    my_tree2 = ttk.Treeview(tree_frame2)
+    my_tree2['columns'] = ("Name", "Age", "Nationality", "MinutesPlayed", "Goals", "Assists", "Positions")
+    my_tree2.column("#0", width=50)
+    my_tree2.column("Name", width=130, minwidth=25)
+    my_tree2.column("Age", anchor=W, width=40)
+    my_tree2.column("Nationality", anchor=W, width=100)
+    my_tree2.column("MinutesPlayed", anchor=CENTER, width=130)
+    my_tree2.column("Goals", anchor=W, width=50)
+    my_tree2.column("Assists", anchor=W, width=60)
+    my_tree2.column("Positions", anchor=W, width=100)
 
-button = Button(root, command=click)
+    my_tree2.heading("Name", text="Name", anchor=W)
+    my_tree2.heading("Age", text="Age", anchor=W)
+    my_tree2.heading("Nationality", text="Nationality", anchor=W)
+    my_tree2.heading("MinutesPlayed", text="Minutes Played", anchor=CENTER)
+    my_tree2.heading("Goals", text="Goals", anchor=W)
+    my_tree2.heading("Assists", text="Assists", anchor=W)
+    my_tree2.heading("Positions", text="Positions", anchor=W)
+
+    for obj in squadList:
+        if obj.name == squadName:
+            sourceSquad = requests.get(obj.link).text
+            soupSquad = BeautifulSoup(sourceSquad, 'lxml')
+            tbodySquad = soupSquad.find('tbody')
+            rowsSquad = tbodySquad.find_all('tr')
+            count = 0
+            for i in range(len(rowsSquad)):
+                playerName = rowsSquad[i].th.a.text
+                pA = rowsSquad[i].find('td', attrs={'data-stat': 'age'}).text.split('-')
+                if(len(pA) == 1):
+                    playerAge = "?"
+                else:
+                    playerAge = int(pA[0])
+                playerNationality = rowsSquad[i].find('td', attrs={'data-stat': 'nationality'}).a.span.text.split()[1]
+                playerMP = rowsSquad[i].find('td', attrs={'data-stat': 'minutes'}).text
+                playerGoals = rowsSquad[i].find('td', attrs={'data-stat': 'goals'}).text
+                if len(playerGoals) == 0:
+                    playerGoals = 0
+                playerAssists = rowsSquad[i].find('td', attrs={'data-stat': 'assists'}).text
+                playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
+
+                # playersList.append(Player(playerName, playerAge, playerNationality, playerSquad, playerMP, playerGoals, playerAssists,
+                #                         playerPositions))
+                my_tree2.insert(parent='', index='end', iid=count, text='', values=(playerName, playerAge, playerNationality, playerMP,
+                                                                    playerGoals, playerAssists, playerPositions))
+                count = count+1
+            break
+
+
+    my_tree2.pack()
+
+
+button = Button(root, command=createWindow)
 button.pack()
 
 root.title('Football Standings')
-root.geometry("1000x1000+300+300")
+root.geometry("1000x1000+600+600")
 
 style = ttk.Style()
 style.configure('Treeview', rowheight=70)
