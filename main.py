@@ -125,6 +125,24 @@ rowsManager = div3.find_all('div', attrs={'class': 'job-man'})
 
 for j in range(len(rowsManager)):
     club = rowsManager[j].find('h2').text
+    if(club.split()[0] == "Tottenham"):
+        club = "Tottenham"
+    if(len(club.split()) > 1):
+        if(club.split()[1] == "United" and club.split()[0] != "Leeds"):
+            clubcopy = club.split()
+            clubcopy[1] = "Utd"
+            club = " ".join(clubcopy)
+    
+    if(len(club.split()) > 2):
+        if(club.split()[2] == "United"):
+            club = "West Ham"
+    if(club == "West Bromwich Albion"):
+        club = "West Brom"
+    if(club == "Brighton & Hove Albion"):
+        club = "Brighton"
+    if(club == "Wolverhampton Wanderers"):
+        club = "Wolves"
+
     managerName = rowsManager[j].find('h1').text
     paragraphs = rowsManager[j].find_all('p')
     parAge = paragraphs[0].text.split()[1]
@@ -165,34 +183,47 @@ arrow4.pack()
 # entry = Entry(root, width=20)
 # entry.pack()
 
+def getManager(name):
+    for obj in managerList:
+        if(obj.club == name):
+            return obj
+
 def createWindow():
     currentItem = my_tree.focus()
     squadName = my_tree.item(currentItem)['values'][1]
     newWindow = Toplevel(root)
     newWindow.geometry("1000x1000+300+300")
-    title = Label(newWindow, text=squadName)
+    title = Label(newWindow, text=squadName, font='times 24 bold underline', fg='blue')
     title.pack()
+    manager = getManager(squadName)
+    managerTitle = Label(newWindow, text=manager.name, font='bold')
+    managerTitle.pack()
     style2 = ttk.Style()
     style2.configure('Treeview', rowheight=70)
     tree_frame2 = Frame(newWindow)
     tree_frame2.pack(pady=20)
-    my_tree2 = ttk.Treeview(tree_frame2)
+    tree_scroll2 = Scrollbar(tree_frame2)
+    tree_scroll2.pack(side = RIGHT, fill=Y)
+
+    my_tree2 = ttk.Treeview(tree_frame2, yscrollcommand=tree_scroll2.set)
+
+    tree_scroll2.config(command=my_tree2.yview)
     my_tree2['columns'] = ("Name", "Age", "Nationality", "MinutesPlayed", "Goals", "Assists", "Positions")
     my_tree2.column("#0", width=50)
-    my_tree2.column("Name", width=130, minwidth=25)
-    my_tree2.column("Age", anchor=W, width=40)
-    my_tree2.column("Nationality", anchor=W, width=100)
+    my_tree2.column("Name", width=200, minwidth=25)
+    my_tree2.column("Age", anchor=CENTER, width=40)
+    my_tree2.column("Nationality", anchor=CENTER, width=100)
     my_tree2.column("MinutesPlayed", anchor=CENTER, width=130)
-    my_tree2.column("Goals", anchor=W, width=50)
-    my_tree2.column("Assists", anchor=W, width=60)
+    my_tree2.column("Goals", anchor=CENTER, width=50)
+    my_tree2.column("Assists", anchor=CENTER, width=60)
     my_tree2.column("Positions", anchor=W, width=100)
 
     my_tree2.heading("Name", text="Name", anchor=W)
-    my_tree2.heading("Age", text="Age", anchor=W)
-    my_tree2.heading("Nationality", text="Nationality", anchor=W)
+    my_tree2.heading("Age", text="Age", anchor=CENTER)
+    my_tree2.heading("Nationality", text="Nationality", anchor=CENTER)
     my_tree2.heading("MinutesPlayed", text="Minutes Played", anchor=CENTER)
-    my_tree2.heading("Goals", text="Goals", anchor=W)
-    my_tree2.heading("Assists", text="Assists", anchor=W)
+    my_tree2.heading("Goals", text="Goals", anchor=CENTER)
+    my_tree2.heading("Assists", text="Assists", anchor=CENTER)
     my_tree2.heading("Positions", text="Positions", anchor=W)
 
     for obj in squadList:
@@ -211,10 +242,14 @@ def createWindow():
                     playerAge = int(pA[0])
                 playerNationality = rowsSquad[i].find('td', attrs={'data-stat': 'nationality'}).a.span.text.split()[1]
                 playerMP = rowsSquad[i].find('td', attrs={'data-stat': 'minutes'}).text
+                if playerMP == "":
+                    playerMP = 0
                 playerGoals = rowsSquad[i].find('td', attrs={'data-stat': 'goals'}).text
                 if len(playerGoals) == 0:
                     playerGoals = 0
                 playerAssists = rowsSquad[i].find('td', attrs={'data-stat': 'assists'}).text
+                if playerAssists == "":
+                    playerAssists = 0
                 playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
 
                 # playersList.append(Player(playerName, playerAge, playerNationality, playerSquad, playerMP, playerGoals, playerAssists,
