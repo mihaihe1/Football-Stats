@@ -10,9 +10,17 @@ defenderPositions = ["DF", "FB", "LB", "RB", "CB"]
 midfielderPositions = ["MF", "DM", "CM", "LM", "RM", "WM"]
 attackerPositions = ["FW", "LW", "RW", "AM"]
 
-a = ""
-m = a.split("-")
-print(m[0])
+fgDict = {"Leicester City":"#1C51AE", "Tottenham":"#0B105F",
+          "Liverpool":"#DB2846", "Southampton":"#DF0025",
+          "Chelsea":"#2D1DC6", "Aston Villa":"#7D74CD",
+          "Everton":"#4639B7", "Crystal Palace":"#2F239C",
+          "Wolves":"#B7AC0C", "Manchester City":"#6E9AC6",
+          "Arsenal":"#EE0303", "West Ham":"#7A2B2B",
+          "Newcastle Utd":"#B5B0B0", "Manchester Utd":"#E91717",
+          "Leeds United":"#E8F70B", "Brighton":"#0B81F7",
+          "Fulham":"#232A30", "West Brom":"#194F84",
+          "Burnely":"#E0E95C", "Sheffield Utd":"#DF1D1D"}
+
 
 class Person:
 
@@ -111,7 +119,6 @@ for i in range(len(rowsStandings)):
 playersList = []
 managerList = []
 
-
 sourceManager = requests.get("https://www.thesackrace.com/managers/premier-league").text
 soupManager = BeautifulSoup(sourceManager, 'lxml')
 divManager = soupManager.find_all('div', attrs={'class': 'container'})[4]
@@ -193,10 +200,10 @@ def createWindow():
     squadName = my_tree.item(currentItem)['values'][1]
     newWindow = Toplevel(root)
     newWindow.geometry("1000x1000+300+300")
-    title = Label(newWindow, text=squadName, font='times 24 bold underline', fg='blue')
+    title = Label(newWindow, text=squadName, font='times 24 bold underline', fg=fgDict[squadName])
     title.pack()
     manager = getManager(squadName)
-    managerTitle = Label(newWindow, text=manager.name, font='bold')
+    managerTitle = Label(newWindow, text="Manager: " + manager.name + "    Age: " + manager.age + "   Debut: " + manager.debut, font='bold')
     managerTitle.pack()
     style2 = ttk.Style()
     style2.configure('Treeview', rowheight=70)
@@ -258,8 +265,11 @@ def createWindow():
                                                                     playerGoals, playerAssists, playerPositions))
                 count = count+1
             break
-
-
+    ##########################################        
+    tree = my_tree2.get_children()
+    my_tree2.focus(tree[3])
+    my_tree2.selection_set(tree[3])
+    ##########################################
     my_tree2.pack()
 
 
