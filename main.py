@@ -43,19 +43,27 @@ class Player(Person):
 
     @staticmethod
     def isGoalkeeper(position):
-        return position in goalkeeperPosition
+        for i in position:
+            if i in goalkeeperPosition:
+                return True
 
     @staticmethod
     def isDefender(position):
-        return position in defenderPositions
+        for i in position:
+            if i in defenderPositions:
+                return True
 
     @staticmethod
     def isMidfielder(position):
-        return position in midfielderPositions
+        for i in position:
+            if i in midfielderPositions:
+                return True
 
     @staticmethod
     def isAttacker(position):
-        return position in attackerPositions
+        for i in position:
+            if i in attackerPositions:
+                return True
 
 
 class Manager(Person):
@@ -235,6 +243,7 @@ def createWindow():
 
     for obj in squadList:
         if obj.name == squadName:
+            playersList = []
             sourceSquad = requests.get(obj.link).text
             soupSquad = BeautifulSoup(sourceSquad, 'lxml')
             tbodySquad = soupSquad.find('tbody')
@@ -259,18 +268,74 @@ def createWindow():
                     playerAssists = 0
                 playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
 
-                # playersList.append(Player(playerName, playerAge, playerNationality, playerSquad, playerMP, playerGoals, playerAssists,
-                #                         playerPositions))
+                playersList.append(Player(playerName, playerAge, playerNationality, squadName, playerMP, playerGoals, playerAssists,
+                                         playerPositions))
                 my_tree2.insert(parent='', index='end', iid=count, text='', values=(playerName, playerAge, playerNationality, playerMP,
                                                                     playerGoals, playerAssists, playerPositions))
                 count = count+1
             break
-    ##########################################        
-    tree = my_tree2.get_children()
-    my_tree2.focus(tree[3])
-    my_tree2.selection_set(tree[3])
+    ##########################################
+    def selectAttacker():
+        att = []
+        cnt = 0
+        for obj in playersList:
+            if obj.isAttacker(obj.positions):
+                att.append(cnt)
+            cnt += 1
+        #tree = my_tree2.get_children()
+        #my_tree2.focus(tree[att[0]])
+        my_tree2.selection_set(tuple(att))
+
+    def selectMidfielder():
+        mid = []
+        cnt = 0
+        for obj in playersList:
+            if obj.isMidfielder(obj.positions):
+                mid.append(cnt)
+            cnt += 1
+        #tree = my_tree2.get_children()
+        #my_tree2.focus(tree[att[0]])
+        my_tree2.selection_set(tuple(mid))
+
+    def selectDefender():
+        dfd = []
+        cnt = 0
+        for obj in playersList:
+            if obj.isDefender(obj.positions):
+                dfd.append(cnt)
+            cnt += 1
+        #tree = my_tree2.get_children()
+        #my_tree2.focus(tree[att[0]])
+        my_tree2.selection_set(tuple(dfd))
+    
+    def selectGK():
+        gk = []
+        cnt = 0
+        for obj in playersList:
+            if obj.isGoalkeeper(obj.positions):
+                gk.append(cnt)
+            cnt += 1
+        #tree = my_tree2.get_children()
+        #my_tree2.focus(tree[att[0]])
+        my_tree2.selection_set(tuple(gk))
+
+    def reset():
+        my_tree2.selection_set(())
+    att = Label(newWindow, text="FILTER PLAYERS", width=15, height=1, bg="#668D9E", font="bold")
+    att.pack()
+    buttonAtt = Button(newWindow, text="Select Attackers", fg="blue", width=20, command=selectAttacker)
+    buttonAtt.pack()
+    buttonMid = Button(newWindow, text="Select Midfielders", fg="orange", width=20,command=selectMidfielder)
+    buttonMid.pack()
+    buttonDef = Button(newWindow, text="Select Defenders", fg="green", width=20, command=selectDefender)
+    buttonDef.pack()
+    buttonGK = Button(newWindow, text="Select Goalkeepers", fg="#099FDF", width=20, command=selectGK)
+    buttonGK.pack()
+    buttonRESET = Button(newWindow, text="Reset filter", fg="red", width=10, command=reset)
+    buttonRESET.pack()
     ##########################################
     my_tree2.pack()
+
 
 
 button = Button(root, command=createWindow)
