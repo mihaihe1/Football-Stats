@@ -2,13 +2,27 @@ from bs4 import BeautifulSoup
 from future.moves import tkinter
 from tkinter import *
 from tkinter import ttk
-# from tkinter.ttk import *
+from ttkthemes import ThemedStyle
 import requests
+import player_manager_class as PMC
+import squad_class as SC
+import lists
 
-goalkeeperPosition = ["GK"]
-defenderPositions = ["DF", "FB", "LB", "RB", "CB"]
-midfielderPositions = ["MF", "DM", "CM", "LM", "RM", "WM"]
-attackerPositions = ["FW", "LW", "RW", "AM"]
+
+root = Tk()
+
+test = Label(root, text="Select a team and then press the button to show more info", width=50, height=5)
+test.pack()
+arrow = Label(root, text="|")
+arrow.pack()
+arrow2 = Label(root, text="|")
+arrow2.pack()
+arrow3 = Label(root, text="|")
+arrow3.pack()
+arrow4 = Label(root, text="V")
+arrow4.pack()
+
+##################### SECOND WINDOW #################################
 
 fgDict = {"Leicester City":"#1C51AE", "Tottenham":"#0B105F",
           "Liverpool":"#DB2846", "Southampton":"#DF0025",
@@ -21,185 +35,8 @@ fgDict = {"Leicester City":"#1C51AE", "Tottenham":"#0B105F",
           "Fulham":"#232A30", "West Brom":"#194F84",
           "Burnely":"#E0E95C", "Sheffield Utd":"#DF1D1D"}
 
-
-class Person:
-
-    def __init__(self, name, age, nationality):
-        self.name = name
-        self.age = age
-        self.nationality = nationality
-
-
-class Player(Person):
-
-    def __init__(self, name, age, nationality, squadName, minutesPlayed, goals, assists, positions=None):
-        super().__init__(name, age, nationality)
-        self.squadName = squadName
-        self.minutesPlayed = minutesPlayed
-        self.goals = goals
-        self.assists = assists
-        self.positions = positions
-        #self. pastTeams = pastTeams
-
-    @staticmethod
-    def isGoalkeeper(position):
-        for i in position:
-            if i in goalkeeperPosition:
-                return True
-
-    @staticmethod
-    def isDefender(position):
-        for i in position:
-            if i in defenderPositions:
-                return True
-
-    @staticmethod
-    def isMidfielder(position):
-        for i in position:
-            if i in midfielderPositions:
-                return True
-
-    @staticmethod
-    def isAttacker(position):
-        for i in position:
-            if i in attackerPositions:
-                return True
-
-
-class Manager(Person):
-
-    def __init__(self, name, age, nationality, club, debut):
-        super().__init__(name, age, nationality)
-        self.club = club
-        self.debut = debut
-
-
-class Squad:
-
-    link = []
-
-    def __init__(self, currentRank, name, matchesPlayed, wins, draws, losses, goalsFor, goalsAgainst, points):
-        self.currentRank = currentRank
-        self.name = name
-        self.matchesPlayed = matchesPlayed
-        self.wins = wins
-        self.draws = draws
-        self.losses = losses
-        self.goalsFor = goalsFor
-        self.goalsAgainst = goalsAgainst
-        self.points = points
-        #self. players = players
-
-    def setLink(self, link):
-        self.link = link
-
-sourceStandings = requests.get('https://fbref.com/en/comps/9/Premier-League-Stats').text
-
-soupStandings = BeautifulSoup(sourceStandings, 'lxml')
-#print(soup.prettify())
-tbodyStandings = soupStandings.find('tbody')
-rowsStandings = tbodyStandings.find_all('tr')
-
-'''
-for i in range(0,30):
-    print('-',end='')
-print('-')
-'''
-
-squadList = []
-
-for i in range(len(rowsStandings)):
-    rank = i+1
-    name = rowsStandings[i].td.a.text
-    mp = rowsStandings[i].find('td', attrs={'data-stat': 'games'}).text
-    wins = rowsStandings[i].find('td', attrs={'data-stat': 'wins'}).text
-    draws = rowsStandings[i].find('td', attrs={'data-stat': 'draws'}).text
-    losses = rowsStandings[i].find('td', attrs={'data-stat': 'losses'}).text
-    gf = rowsStandings[i].find('td', attrs={'data-stat': 'goals_for'}).text
-    ga = rowsStandings[i].find('td', attrs={'data-stat': 'goals_against'}).text
-    pts = rowsStandings[i].find('td', attrs={'data-stat': 'points'}).text
-    squadList.append(Squad(rank, name, mp, wins, draws, losses, gf, ga, pts))
-    link = rowsStandings[i].find('a', href=True)
-    squadList[i].setLink('https://fbref.com'+link['href'])
-    #print(rowsStandings[i].td.a.text + ": " + wins.text + " W")
-
-
-playersList = []
-managerList = []
-
-sourceManager = requests.get("https://www.thesackrace.com/managers/premier-league").text
-soupManager = BeautifulSoup(sourceManager, 'lxml')
-divManager = soupManager.find_all('div', attrs={'class': 'container'})[4]
-#print(divManager)
-div2 = divManager.find('div', attrs={'class': 'breaking-news'})
-#print(div2.prettify())
-div3 = div2.find('div', attrs={'id': 'premier-league'})
-#print(div3)
-rowsManager = div3.find_all('div', attrs={'class': 'job-man'})
-#print(rowsManager)
-
-for j in range(len(rowsManager)):
-    club = rowsManager[j].find('h2').text
-    if(club.split()[0] == "Tottenham"):
-        club = "Tottenham"
-    if(len(club.split()) > 1):
-        if(club.split()[1] == "United" and club.split()[0] != "Leeds"):
-            clubcopy = club.split()
-            clubcopy[1] = "Utd"
-            club = " ".join(clubcopy)
-    
-    if(len(club.split()) > 2):
-        if(club.split()[2] == "United"):
-            club = "West Ham"
-    if(club == "West Bromwich Albion"):
-        club = "West Brom"
-    if(club == "Brighton & Hove Albion"):
-        club = "Brighton"
-    if(club == "Wolverhampton Wanderers"):
-        club = "Wolves"
-
-    managerName = rowsManager[j].find('h1').text
-    paragraphs = rowsManager[j].find_all('p')
-    parAge = paragraphs[0].text.split()[1]
-    parTime = paragraphs[1].text.split(':')[1].lstrip()
-    managerList.append(Manager(managerName, parAge, "ENG", club, parTime))
-
-
-def printPlayers():
-    for obj in playersList:
-        print(obj.name, obj.age, obj.nationality, obj.minutesPlayed, obj.goals, obj.positions)
-
-
-def printManagers():
-    for obj in managerList:
-        print(obj.name, obj.age, obj.nationality, obj.club, obj.debut)
-
-
-def printTable():
-    for obj in squadList:
-        print(obj.currentRank, obj.name, obj.wins, obj.losses, obj.goalsFor, obj.points, sep=' ')
-
-printManagers()
-# printPlayers()
-# printTable()
-root = Tk()
-
-test = Label(root, text="Select a team and then press the button to show more info", width=50, height=10)
-test.pack()
-arrow = Label(root, text="|")
-arrow.pack()
-arrow2 = Label(root, text="|")
-arrow2.pack()
-arrow3 = Label(root, text="|")
-arrow3.pack()
-arrow4 = Label(root, text="V")
-arrow4.pack()
-
-# entry = Entry(root, width=20)
-# entry.pack()
-
 def getManager(name):
-    for obj in managerList:
+    for obj in lists.managerList:
         if(obj.club == name):
             return obj
 
@@ -241,7 +78,7 @@ def createWindow():
     my_tree2.heading("Assists", text="Assists", anchor=CENTER)
     my_tree2.heading("Positions", text="Positions", anchor=W)
 
-    for obj in squadList:
+    for obj in lists.squadList:
         if obj.name == squadName:
             playersList = []
             sourceSquad = requests.get(obj.link).text
@@ -268,13 +105,13 @@ def createWindow():
                     playerAssists = 0
                 playerPositions = rowsSquad[i].find('td', attrs={'data-stat': 'position'}).text.split(",")
 
-                playersList.append(Player(playerName, playerAge, playerNationality, squadName, playerMP, playerGoals, playerAssists,
+                playersList.append(PMC.Player(playerName, playerAge, playerNationality, squadName, playerMP, playerGoals, playerAssists,
                                          playerPositions))
                 my_tree2.insert(parent='', index='end', iid=count, text='', values=(playerName, playerAge, playerNationality, playerMP,
                                                                     playerGoals, playerAssists, playerPositions))
                 count = count+1
             break
-    ##########################################
+    
     def selectAttacker():
         att = []
         cnt = 0
@@ -333,9 +170,10 @@ def createWindow():
     buttonGK.pack()
     buttonRESET = Button(newWindow, text="Reset filter", fg="red", width=10, command=reset)
     buttonRESET.pack()
-    ##########################################
+    
     my_tree2.pack()
 
+################# BACK TO MAIN WINDOW ############################
 
 
 button = Button(root, command=createWindow)
@@ -343,6 +181,9 @@ button.pack()
 
 root.title('Football Standings')
 root.geometry("1000x1000+600+600")
+
+theme = ThemedStyle(root)
+theme.set_theme("radiance")
 
 style = ttk.Style()
 style.configure('Treeview', rowheight=70)
@@ -384,7 +225,7 @@ my_tree.heading("GoalsAgainst", text="Goals Against", anchor=W)
 my_tree.heading("Points", text="Points", anchor=W)
 
 imgList = []
-for obj in squadList:
+for obj in lists.squadList:
     name = obj.name.lower().split()
     if len(name) == 2:
         name2 = "_".join(name)
@@ -396,7 +237,7 @@ for obj in squadList:
 
 
 count = 0
-for obj in squadList:
+for obj in lists.squadList:
     my_tree.insert(parent='', index='end', iid=count, text='', image=imgList[count], values=(obj.currentRank, obj.name, obj.matchesPlayed,
                                                                     obj.wins, obj.draws, obj.losses, obj.goalsFor,
                                                                     obj.goalsAgainst, obj.points))
